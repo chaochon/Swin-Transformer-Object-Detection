@@ -1,5 +1,5 @@
-#PYTORCH="1.9.0" CUDA="11.3" CUDNN="8"
-FROM nvcr.io/nvidia/pytorch:21.04-py3
+#PYTORCH="1.5.0" CUDA="10.2" CUDNN="7.6"
+FROM nvcr.io/nvidia/pytorch:20.03-py3
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
@@ -21,27 +21,25 @@ RUN cat /etc/ssh/ssh_config | grep -v StrictHostKeyChecking > /etc/ssh/ssh_confi
     mv -f /etc/ssh/ssh_config.new /etc/ssh/ssh_config && \
     mv -f /etc/ssh/sshd_config.new /etc/ssh/sshd_config > /dev/null 2>&1;
 
-# Install openmim and mmengine
-#RUN pip install mmengine
-
-# Install opencv-python
-#RUN pip uninstall -y $(pip list --format=freeze | grep opencv) &&  rm -rf /usr/local/lib/python3.10/dist-packages/cv2/
-#RUN pip install opencv-python-headless
-
 # Install mmcv from source
-RUN git clone -b v1.5.0 https://github.com/open-mmlab/mmcv.git /mmcv
-WORKDIR /mmcv
-RUN pip install -r requirements/optional.txt
-RUN pip install -e . -v
-##RUN pip install mmcv-full==latest+torch1.6.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
-
+RUN pip install mmcv-full==1.2.7 -i https://pypi.tuna.tsinghua.edu.cn/simple
+#RUN git clone -b v1.2.7 https://github.com/open-mmlab/mmcv.git /mmcv
+#WORKDIR /mmcv
+#RUN pip install -r requirements/optional.txt
+#RUN pip install -e . -v
 
 # Install MMDetection from source
-RUN conda clean --all
-RUN git clone -b v2.25.0 https://github.com/open-mmlab/mmdetection.git /mmdetection
+RUN git clone -b v2.10.0 https://github.com/open-mmlab/mmdetection.git /mmdetection
 WORKDIR /mmdetection
 ENV FORCE_CUDA="1"
 RUN pip install -r requirements/build.txt
 RUN pip install --no-cache-dir -e . -v
+
+# Install numpy==1.22.4
+RUN pip uninstall numpy && pip install numpy==1.22.4 -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# setup for this program
+WORKDIR /home/caochong/experiments/Swin-Transformer-Object-Detection
+RUN pip install -e . -v
 
 CMD ["/usr/bin/bash"]
